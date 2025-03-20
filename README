@@ -1,0 +1,145 @@
+Microservicios con Node.js, Sequelize y Angular
+Este proyecto consta de:
+
+auth-service: Servicio para autenticación y manejo de usuarios.
+task-service: Servicio para gestión de tareas.
+frontend: Aplicación Angular para interactuar con ambos microservicios.
+
+/project-root
+│
+├── auth-service (Puerto 3000)
+│   ├── index.js
+│   ├── .env
+│   ├── package.json
+│   └── /src
+│
+├── task-service (Puerto 4000)
+│   ├── index.js
+│   ├── .env
+│   ├── package.json
+│   └── /src
+│
+├── frontend (Puerto 5004 - Angular)
+│   ├── src
+│   ├── proxy.conf.json
+│   ├── package.json
+│   └── angular.json
+└── README.md
+
+
+🔧 Configuración de los Microservicios (Backend)
+📂 auth-service (Servicio de autenticación)
+Dirígete al directorio del servicio:
+bash
+Copiar
+Editar
+cd auth-service
+Instala las dependencias:
+bash
+Copiar
+Editar
+npm install
+Configura tu archivo .env:
+env
+Copiar
+Editar
+PORT=3000
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=nombre_base_datos
+DB_HOST=localhost
+JWT_SECRET=tu_secreto
+Inicia el servicio:
+bash
+Copiar
+Editar
+npm run dev
+El servicio estará disponible en http://localhost:3000/.
+
+📂 task-service (Servicio de gestión de tareas)
+Dirígete al directorio del servicio:
+bash
+Copiar
+Editar
+cd task-service
+Instala las dependencias:
+bash
+Copiar
+Editar
+npm install
+Configura tu archivo .env:
+env
+Copiar
+Editar
+PORT=4000
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=nombre_base_datos
+DB_HOST=localhost
+JWT_SECRET=tu_secreto
+Inicia el servicio:
+bash
+Copiar
+Editar
+npm run dev
+El servicio estará disponible en http://localhost:4000/.
+
+🌟 Configuración del Frontend (Angular)
+📂 frontend (Angular Application)
+Dirígete al directorio del frontend:
+bash
+Copiar
+Editar
+cd frontend
+Instala las dependencias:
+bash
+Copiar
+Editar
+npm install
+Configura tu archivo proxy.conf.json:
+json
+Copiar
+Editar
+{
+  "/api/user": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/tasks": {
+    "target": "http://localhost:4000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
+Inicia la aplicación Angular con el proxy:
+bash
+Copiar
+Editar
+ng serve --proxy-config proxy.conf.json
+El frontend estará disponible en http://localhost:5004/.
+
+📌 Cómo Probar el Proyecto (Postman o Angular)
+🔒 Rutas del auth-service (http://localhost:3000/)
+Login: POST /api/user
+json
+Copiar
+Editar
+{
+  "nombre_usuario": "tu_usuario",
+  "contrasena": "tu_contraseña"
+}
+Registro (si aplica): POST /api/user/register
+📌 Rutas del task-service (http://localhost:4000/)
+Crear tarea: POST /api/tasks (Requiere Token en Headers)
+Obtener tareas: GET /api/tasks (Requiere Token en Headers)
+Eliminar tarea: DELETE /api/tasks/:id (Requiere Token en Headers)
+🔑 Autenticación con Token
+Cuando hagas login desde Angular o Postman, se debe enviar el token recibido en cada solicitud al task-service en los headers:
+
+http
+Copiar
+Editar
+Authorization: Bearer <tu_token
