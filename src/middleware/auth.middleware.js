@@ -1,17 +1,21 @@
-const express = require('express');
-const router = express.Router();
-const userController = require('../controllers/user.controller');
-const verifyToken = require('../middleware/auth.middleware');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-// Registro de usuario
-router.post('/register', userController.register);
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
 
-// Inicio de sesión
-router.post('/login', userController.login);
+    if (!token) {
+        return res.status(403).send({ message: 'No se proporcionó un token.' });
+    }
 
-// Ruta protegida de ejemplo
-router.get('/profile', verifyToken, (req, res) => {
-    res.json({ message: 'Acceso autorizado.', user: req.user });
-});
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'Token no válido.' });
+        }
+        
+        req.user = decoded;
+        next();
+    });
+}
 
-module.exports = router;
+module.exports = verifyToken;

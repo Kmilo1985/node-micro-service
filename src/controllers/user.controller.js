@@ -1,24 +1,63 @@
-const { register, login } = require('../services/auth.service');
 const User = require('../models/user.model');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-const registerUser = async (req, res) => {
+exports.register = async (req, res) => {
+    const { nombre, nombreUsuario, contrasena } = req.body;
+
     try {
-        const { username, password, email } = req.body;
-        const user = await register(username, password, email);
-        res.status(201).json(user);
+        const hashedPassword = await bcrypt.hash(contrasena, 10);
+
+        const user = await User.create({
+            nombre,
+            nombreUsuario,
+            contrasena: hashedPassword
+        });
+
+        res.status(201).json({ message: 'Usuario registrado exitosamente.' });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ message: 'Error al registrar usuario.', error });
     }
 };
 
-const loginUser = async (req, res) => {
+exports.login = async (req, res) => {
+    const { nombreUsuario, contrasena } = req.body;
+
     try {
-        const { username, password } = req.body;
-        const token = await login(username, password);
-        res.status(200).json({ token });
+        const user = await User.findOne({ where: { nombreUsuario } });
+
+        console.log('📌 Usuario encontrado:', user);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado.' });
+        }
+
+        console.log('📌 Contraseña almacenada en la base de datos:', user.contrasena);
+
+        if (!user.contrasena) {
+            return res.status(500).json({ message: 'El usuario no tiene contraseña registrada.' });
+        }
+
+       // Verificar la contraseña usando bcrypt
+       const validPassword = await bcrypt.compare(contrasena, user.contrasena);
+
+        
+        if (!validPassword) {  
+            return res.status(401).json({ message: 'Contraseña incorrecta.' });
+        }
+
+        const token = jwt.sign(
+            { id: user.id, nombreUsuario: user.nombreUsuario },
+            process.env.JWT_SECRET, 
+            { expiresIn: '1h' }
+        );
+
+        console.log('📌 Token generado:', token);
+
+        res.json({ message: 'Inicio de sesión exitoso.', token });
+
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.error('❌ Error al iniciar sesión:', error);
+        res.status(500).json({ message: 'Error al iniciar sesión.', error });
     }
 };
-
-module.exports = { registerUser, loginUser };

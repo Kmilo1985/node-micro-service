@@ -1,9 +1,16 @@
 const express = require('express');
-const { registerUser, loginUser } = require('../controllers/user.controller');
-
 const router = express.Router();
+const userController = require('../controllers/user.controller');
+const verifyToken = require('../middleware/auth.middleware');
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+// Registro de usuario
+router.post('/register', userController.register);
 
+// Inicio de sesión
+router.post('/login', userController.login);
+
+// Ruta protegida de ejemplo
+router.post('/profile', verifyToken, (req, res) => {
+    res.json({ message: 'Acceso autorizado.', user: req.user });
+});
 module.exports = router;
